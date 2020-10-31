@@ -1,0 +1,28 @@
+# User Constraint File for iCE40hx8k Breakout Board
+
+# Onboard LEDs
+set_io --warn-no-port  LED[0] B5
+set_io --warn-no-port  LED[1] B4
+set_io --warn-no-port  LED[2] A2
+set_io --warn-no-port  LED[3] A1
+set_io --warn-no-port  LED[4] C5
+set_io --warn-no-port  LED[5] C4
+set_io --warn-no-port  LED[6] B3
+set_io --warn-no-port  LED[7] C3
+
+# Onboard 12Mhz oscillator
+set_io CLK J3   # 12Mhz
+
+# USART
+set_io --warn-no-port  TX  B12  # out
+set_io --warn-no-port  RX  B10  # in
+set_io --warn-no-port  DCD B15  # out
+set_io --warn-no-port  DSR B14  # out
+set_io --warn-no-port  DTR A16  # in
+set_io --warn-no-port  CTS A15  # out
+set_io --warn-no-port  RTS B13  # in
+
+# I2S
+set_io --warn-no-port  I2S[0] M15  # LRCLK
+set_io --warn-no-port  I2S[1] P15  # DATA
+set_io --warn-no-port  I2S[2] R15  # BCLK

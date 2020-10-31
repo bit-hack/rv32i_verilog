@@ -1,0 +1,12 @@
+# DESCRIPTION: Verilator output: Timestamp data for --skip-identical.  Delete at will.
+C "--top-module rv32i_cpu_t --cc rtl/rv32i.v"
+T    118078        0  1605007351           0  1605195179           0 "obj_dir/Vrv32i_cpu_t.cpp"
+T      3926        0  1605007351           0  1605195179           0 "obj_dir/Vrv32i_cpu_t.h"
+T      1518        0  1605007351           0  1605195179           0 "obj_dir/Vrv32i_cpu_t.mk"
+T       574        0  1605007351           0  1605195179           0 "obj_dir/Vrv32i_cpu_t__Syms.cpp"
+T       780        0  1605007351           0  1605195179           0 "obj_dir/Vrv32i_cpu_t__Syms.h"
+T       231        0  1605007351           0  1605195179           0 "obj_dir/Vrv32i_cpu_t__ver.d"
+T         0        0  1605007351           0  1605195179           0 "obj_dir/Vrv32i_cpu_t__verFiles.dat"
+T      1212        0  1605007351           0  1605195179           0 "obj_dir/Vrv32i_cpu_t_classes.mk"
+S     11604        0  1604273735           0  1605024413           0 "rtl/rv32i.v"
+S         0        0           0           0           1           0 "verilator"

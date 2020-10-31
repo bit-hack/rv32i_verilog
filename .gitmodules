@@ -1,0 +1,4 @@
+[submodule "external/verilator"]
+	path = external/verilator
+	url = https://github.com/verilator/verilator.git
+	branch = 1f04d17e776
