@@ -1,0 +1,2 @@
+apio build -v
+pause
