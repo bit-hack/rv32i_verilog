@@ -131,9 +131,9 @@ module soc_t #(parameter ROM_FILE="") (
   // address decoding
   wire is_write  = |cpu_write_mask;
   wire is_read   = !is_write;
-  wire sel_bram  = (cpu_addr[31:24] == 8'hf0); // 0xf0000000 -> 0xf0ffffff
-  wire sel_led   = (cpu_addr[31:24] == 8'h80); // 0x80000000 -> 0x80ffffff
-  wire sel_uart  = (cpu_addr[31:24] == 8'h70); // 0x70000000 -> 0x70ffffff
+  wire sel_bram  = (cpu_addr[31:24] ==  8'hf0);        // 0xf0000000 -> 0xf0ffffff
+  wire sel_led   = (cpu_addr[31: 8] == 24'h100000);    // 0x10000000 -> 0x100000ff
+  wire sel_uart  = (cpu_addr[31: 8] == 24'h100001);    // 0x10000100 -> 0x100001ff
 
   // uart transmitter
   wire [31:0] uart_dout;
