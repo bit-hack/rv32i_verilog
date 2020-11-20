@@ -96,87 +96,69 @@ VL_INLINE_OPT void Vrv32i_cpu_t::_sequent__TOP__1(Vrv32i_cpu_t__Syms* __restrict
     Vrv32i_cpu_t* __restrict vlTOPp VL_ATTR_UNUSED = vlSymsp->TOPp;
     // Variables
     VL_SIG8(__Vdlyvset__rv32i_cpu_t__DOT__X__v0,0,0);
-    VL_SIG8(__Vdly__rv32i_cpu_t__DOT__phi,1,0);
+    VL_SIG8(__Vdly__rv32i_cpu_t__DOT__phi,2,0);
     VL_SIG8(__Vdlyvset__rv32i_cpu_t__DOT__X__v1,0,0);
     VL_SIG8(__Vdlyvdim0__rv32i_cpu_t__DOT__X__v2,4,0);
     VL_SIG8(__Vdlyvset__rv32i_cpu_t__DOT__X__v2,0,0);
-    VL_SIG8(__Vdlyvdim0__rv32i_cpu_t__DOT__X__v3,4,0);
-    VL_SIG8(__Vdlyvset__rv32i_cpu_t__DOT__X__v3,0,0);
     VL_SIG(__Vdlyvval__rv32i_cpu_t__DOT__X__v2,31,0);
-    VL_SIG(__Vdlyvval__rv32i_cpu_t__DOT__X__v3,31,0);
     // Body
     __Vdly__rv32i_cpu_t__DOT__phi = vlTOPp->rv32i_cpu_t__DOT__phi;
     __Vdlyvset__rv32i_cpu_t__DOT__X__v0 = 0U;
     __Vdlyvset__rv32i_cpu_t__DOT__X__v1 = 0U;
     __Vdlyvset__rv32i_cpu_t__DOT__X__v2 = 0U;
-    __Vdlyvset__rv32i_cpu_t__DOT__X__v3 = 0U;
-    // ALWAYS at rtl/rv32i.v:206
+    // ALWAYS at rtl/rv32i.v:196
     if (vlTOPp->reset) {
-	vlTOPp->rv32i_cpu_t__DOT__pc = 0x10074U;
+	vlTOPp->rv32i_cpu_t__DOT__pc = 0x10070U;
 	__Vdlyvset__rv32i_cpu_t__DOT__X__v0 = 1U;
-	__Vdly__rv32i_cpu_t__DOT__phi = 0U;
 	vlTOPp->rv32i_cpu_t__DOT__mem_write = 0U;
-	vlTOPp->rv32i_cpu_t__DOT__mem_width = 4U;
+	vlTOPp->rv32i_cpu_t__DOT__inst = 0x13U;
+	__Vdly__rv32i_cpu_t__DOT__phi = 0U;
 	__Vdlyvset__rv32i_cpu_t__DOT__X__v1 = 1U;
     } else {
 	if ((1U & (~ (IData)(vlTOPp->hold)))) {
-	    if ((0U == (IData)(vlTOPp->rv32i_cpu_t__DOT__phi))) {
-		vlTOPp->rv32i_cpu_t__DOT__mem_write = 0U;
-		vlTOPp->rv32i_cpu_t__DOT__mem_width 
-		    = vlTOPp->rv32i_cpu_t__DOT__access_width;
-		vlTOPp->rv32i_cpu_t__DOT__inst = vlTOPp->rv32i_cpu_t__DOT__mem_in;
-		__Vdly__rv32i_cpu_t__DOT__phi = 1U;
+	    if ((1U == (IData)(vlTOPp->rv32i_cpu_t__DOT__phi))) {
+		__Vdly__rv32i_cpu_t__DOT__phi = 2U;
 	    } else {
-		if ((1U == (IData)(vlTOPp->rv32i_cpu_t__DOT__phi))) {
-		    if (vlTOPp->rv32i_cpu_t__DOT__will_read) {
-			vlTOPp->rv32i_cpu_t__DOT__mem_write = 0U;
-			vlTOPp->rv32i_cpu_t__DOT__mem_width 
-			    = vlTOPp->rv32i_cpu_t__DOT__access_width;
-			__Vdly__rv32i_cpu_t__DOT__phi = 3U;
-		    } else {
-			if (vlTOPp->rv32i_cpu_t__DOT__will_store) {
-			    vlTOPp->rv32i_cpu_t__DOT__mem_write = 1U;
+		if ((2U == (IData)(vlTOPp->rv32i_cpu_t__DOT__phi))) {
+		    vlTOPp->rv32i_cpu_t__DOT__inst 
+			= vlTOPp->rv32i_cpu_t__DOT__mem_in;
+		    __Vdly__rv32i_cpu_t__DOT__phi = 3U;
+		} else {
+		    if ((3U == (IData)(vlTOPp->rv32i_cpu_t__DOT__phi))) {
+			if (vlTOPp->rv32i_cpu_t__DOT__will_read) {
+			    vlTOPp->out_mem_addr = vlTOPp->rv32i_cpu_t__DOT__ld_addr;
 			    vlTOPp->rv32i_cpu_t__DOT__mem_width 
 				= vlTOPp->rv32i_cpu_t__DOT__access_width;
-			    __Vdly__rv32i_cpu_t__DOT__phi = 2U;
+			    __Vdly__rv32i_cpu_t__DOT__phi = 4U;
 			} else {
-			    __Vdlyvval__rv32i_cpu_t__DOT__X__v2 
-				= ((IData)(vlTOPp->rv32i_cpu_t__DOT__write_rd)
-				    ? vlTOPp->rv32i_cpu_t__DOT__res_alu
-				    : vlTOPp->rv32i_cpu_t__DOT__X
-				   [vlTOPp->rv32i_cpu_t__DOT__rd]);
-			    __Vdlyvset__rv32i_cpu_t__DOT__X__v2 = 1U;
-			    __Vdlyvdim0__rv32i_cpu_t__DOT__X__v2 
-				= vlTOPp->rv32i_cpu_t__DOT__rd;
-			    vlTOPp->rv32i_cpu_t__DOT__mem_write = 0U;
-			    vlTOPp->rv32i_cpu_t__DOT__mem_width = 4U;
-			    vlTOPp->rv32i_cpu_t__DOT__pc 
-				= vlTOPp->rv32i_cpu_t__DOT__next_pc;
-			    __Vdly__rv32i_cpu_t__DOT__phi = 0U;
+			    if (vlTOPp->rv32i_cpu_t__DOT__will_store) {
+				vlTOPp->out_mem_addr 
+				    = vlTOPp->rv32i_cpu_t__DOT__st_addr;
+				vlTOPp->rv32i_cpu_t__DOT__mem_write = 1U;
+				vlTOPp->rv32i_cpu_t__DOT__mem_width 
+				    = vlTOPp->rv32i_cpu_t__DOT__access_width;
+				__Vdly__rv32i_cpu_t__DOT__phi = 0U;
+			    } else {
+				__Vdly__rv32i_cpu_t__DOT__phi = 0U;
+			    }
 			}
-		    }
-		} else {
-		    if ((2U == (IData)(vlTOPp->rv32i_cpu_t__DOT__phi))) {
-			vlTOPp->rv32i_cpu_t__DOT__mem_write = 0U;
-			vlTOPp->rv32i_cpu_t__DOT__mem_width = 4U;
-			vlTOPp->rv32i_cpu_t__DOT__pc 
-			    = vlTOPp->rv32i_cpu_t__DOT__next_pc;
-			__Vdly__rv32i_cpu_t__DOT__phi = 0U;
 		    } else {
-			if ((3U == (IData)(vlTOPp->rv32i_cpu_t__DOT__phi))) {
-			    __Vdlyvval__rv32i_cpu_t__DOT__X__v3 
-				= ((IData)(vlTOPp->rv32i_cpu_t__DOT__write_rd)
-				    ? vlTOPp->rv32i_cpu_t__DOT__res_alu
-				    : vlTOPp->rv32i_cpu_t__DOT__X
-				   [vlTOPp->rv32i_cpu_t__DOT__rd]);
-			    __Vdlyvset__rv32i_cpu_t__DOT__X__v3 = 1U;
-			    __Vdlyvdim0__rv32i_cpu_t__DOT__X__v3 
-				= vlTOPp->rv32i_cpu_t__DOT__rd;
+			if ((4U == (IData)(vlTOPp->rv32i_cpu_t__DOT__phi))) {
+			    __Vdly__rv32i_cpu_t__DOT__phi = 0U;
+			} else {
+			    if (vlTOPp->rv32i_cpu_t__DOT__write_rd) {
+				__Vdlyvval__rv32i_cpu_t__DOT__X__v2 
+				    = vlTOPp->rv32i_cpu_t__DOT__res_alu;
+				__Vdlyvset__rv32i_cpu_t__DOT__X__v2 = 1U;
+				__Vdlyvdim0__rv32i_cpu_t__DOT__X__v2 
+				    = vlTOPp->rv32i_cpu_t__DOT__rd;
+			    }
 			    vlTOPp->rv32i_cpu_t__DOT__mem_write = 0U;
-			    vlTOPp->rv32i_cpu_t__DOT__mem_width = 4U;
 			    vlTOPp->rv32i_cpu_t__DOT__pc 
 				= vlTOPp->rv32i_cpu_t__DOT__next_pc;
-			    __Vdly__rv32i_cpu_t__DOT__phi = 0U;
+			    vlTOPp->out_mem_addr = vlTOPp->rv32i_cpu_t__DOT__next_pc;
+			    vlTOPp->rv32i_cpu_t__DOT__mem_width = 4U;
+			    __Vdly__rv32i_cpu_t__DOT__phi = 1U;
 			}
 		    }
 		}
@@ -184,7 +166,7 @@ VL_INLINE_OPT void Vrv32i_cpu_t::_sequent__TOP__1(Vrv32i_cpu_t__Syms* __restrict
 	}
     }
     vlTOPp->rv32i_cpu_t__DOT__phi = __Vdly__rv32i_cpu_t__DOT__phi;
-    // ALWAYSPOST at rtl/rv32i.v:209
+    // ALWAYSPOST at rtl/rv32i.v:199
     if (__Vdlyvset__rv32i_cpu_t__DOT__X__v0) {
 	vlTOPp->rv32i_cpu_t__DOT__X[0U] = 0U;
     }
@@ -195,10 +177,11 @@ VL_INLINE_OPT void Vrv32i_cpu_t::_sequent__TOP__1(Vrv32i_cpu_t__Syms* __restrict
 	vlTOPp->rv32i_cpu_t__DOT__X[__Vdlyvdim0__rv32i_cpu_t__DOT__X__v2] 
 	    = __Vdlyvval__rv32i_cpu_t__DOT__X__v2;
     }
-    if (__Vdlyvset__rv32i_cpu_t__DOT__X__v3) {
-	vlTOPp->rv32i_cpu_t__DOT__X[__Vdlyvdim0__rv32i_cpu_t__DOT__X__v3] 
-	    = __Vdlyvval__rv32i_cpu_t__DOT__X__v3;
-    }
+    // ALWAYS at rtl/rv32i.v:10
+    vlTOPp->__Vtableidx2 = (((IData)(vlTOPp->rv32i_cpu_t__DOT__mem_width) 
+			     << 2U) | (3U & vlTOPp->out_mem_addr));
+    vlTOPp->rv32i_cpu_t__DOT__mask = vlTOPp->__Vtable2_rv32i_cpu_t__DOT__mask
+	[vlTOPp->__Vtableidx2];
     vlTOPp->rv32i_cpu_t__DOT__rd = (0x1fU & (vlTOPp->rv32i_cpu_t__DOT__inst 
 					     >> 7U));
     vlTOPp->rv32i_cpu_t__DOT__access_width = (7U & 
@@ -232,7 +215,23 @@ VL_INLINE_OPT void Vrv32i_cpu_t::_sequent__TOP__1(Vrv32i_cpu_t__Syms* __restrict
     vlTOPp->rv32i_cpu_t__DOT__will_store = (8U == (0x1fU 
 						   & (vlTOPp->rv32i_cpu_t__DOT__inst 
 						      >> 2U)));
-    // ALWAYS at rtl/rv32i.v:186
+    vlTOPp->rv32i_cpu_t__DOT__st_addr = (vlTOPp->rv32i_cpu_t__DOT__X
+					 [(0x1fU & 
+					   (vlTOPp->rv32i_cpu_t__DOT__inst 
+					    >> 0xfU))] 
+					 + ((0xfffff800U 
+					     & (VL_NEGATE_I((IData)(
+								    (1U 
+								     & (vlTOPp->rv32i_cpu_t__DOT__inst 
+									>> 0x1fU)))) 
+						<< 0xbU)) 
+					    | ((0x7e0U 
+						& (vlTOPp->rv32i_cpu_t__DOT__inst 
+						   >> 0x14U)) 
+					       | (0x1fU 
+						  & (vlTOPp->rv32i_cpu_t__DOT__inst 
+						     >> 7U)))));
+    // ALWAYS at rtl/rv32i.v:182
     vlTOPp->__Vtableidx1 = (((0U != (0x1fU & (vlTOPp->rv32i_cpu_t__DOT__inst 
 					      >> 7U))) 
 			     << 5U) | (0x1fU & (vlTOPp->rv32i_cpu_t__DOT__inst 
@@ -278,6 +277,9 @@ VL_INLINE_OPT void Vrv32i_cpu_t::_sequent__TOP__1(Vrv32i_cpu_t__Syms* __restrict
 					  << 0xbU)) 
 				      | (0x7ffU & (vlTOPp->rv32i_cpu_t__DOT__inst 
 						   >> 0x14U)));
+    vlTOPp->out_write_mask = ((IData)(vlTOPp->rv32i_cpu_t__DOT__mem_write)
+			       ? (IData)(vlTOPp->rv32i_cpu_t__DOT__mask)
+			       : 0U);
     // ALWAYS at rtl/rv32i.v:41
     vlTOPp->out_data = ((1U == (IData)(vlTOPp->rv32i_cpu_t__DOT__mem_width))
 			 ? ((0xff000000U & (vlTOPp->rv32i_cpu_t__DOT____Vcellinp__out_shift____pinNumber3 
@@ -292,7 +294,12 @@ VL_INLINE_OPT void Vrv32i_cpu_t::_sequent__TOP__1(Vrv32i_cpu_t__Syms* __restrict
 						<< 0x10U)) 
 				| (0xffffU & vlTOPp->rv32i_cpu_t__DOT____Vcellinp__out_shift____pinNumber3))
 			     : vlTOPp->rv32i_cpu_t__DOT____Vcellinp__out_shift____pinNumber3));
-    // ALWAYS at rtl/rv32i.v:141
+    vlTOPp->rv32i_cpu_t__DOT__ld_addr = (vlTOPp->rv32i_cpu_t__DOT__X
+					 [(0x1fU & 
+					   (vlTOPp->rv32i_cpu_t__DOT__inst 
+					    >> 0xfU))] 
+					 + vlTOPp->rv32i_cpu_t__DOT__immi);
+    // ALWAYS at rtl/rv32i.v:137
     vlTOPp->rv32i_cpu_t__DOT__next_pc = ((0x4000U & vlTOPp->rv32i_cpu_t__DOT__inst)
 					  ? ((0x2000U 
 					      & vlTOPp->rv32i_cpu_t__DOT__inst)
@@ -703,37 +710,6 @@ VL_INLINE_OPT void Vrv32i_cpu_t::_sequent__TOP__1(Vrv32i_cpu_t__Syms* __restrict
 				     [(0x1fU & (vlTOPp->rv32i_cpu_t__DOT__inst 
 						>> 0x14U))]
 				      : vlTOPp->rv32i_cpu_t__DOT__immi);
-    vlTOPp->out_mem_addr = ((0U == (IData)(vlTOPp->rv32i_cpu_t__DOT__phi))
-			     ? vlTOPp->rv32i_cpu_t__DOT__pc
-			     : ((0U == (0x1fU & (vlTOPp->rv32i_cpu_t__DOT__inst 
-						 >> 2U)))
-				 ? (vlTOPp->rv32i_cpu_t__DOT__X
-				    [(0x1fU & (vlTOPp->rv32i_cpu_t__DOT__inst 
-					       >> 0xfU))] 
-				    + vlTOPp->rv32i_cpu_t__DOT__immi)
-				 : (vlTOPp->rv32i_cpu_t__DOT__X
-				    [(0x1fU & (vlTOPp->rv32i_cpu_t__DOT__inst 
-					       >> 0xfU))] 
-				    + ((0xfffff800U 
-					& (VL_NEGATE_I((IData)(
-							       (1U 
-								& (vlTOPp->rv32i_cpu_t__DOT__inst 
-								   >> 0x1fU)))) 
-					   << 0xbU)) 
-				       | ((0x7e0U & 
-					   (vlTOPp->rv32i_cpu_t__DOT__inst 
-					    >> 0x14U)) 
-					  | (0x1fU 
-					     & (vlTOPp->rv32i_cpu_t__DOT__inst 
-						>> 7U)))))));
-    // ALWAYS at rtl/rv32i.v:10
-    vlTOPp->__Vtableidx2 = (((IData)(vlTOPp->rv32i_cpu_t__DOT__mem_width) 
-			     << 2U) | (3U & vlTOPp->out_mem_addr));
-    vlTOPp->rv32i_cpu_t__DOT__mask = vlTOPp->__Vtable2_rv32i_cpu_t__DOT__mask
-	[vlTOPp->__Vtableidx2];
-    vlTOPp->out_write_mask = ((IData)(vlTOPp->rv32i_cpu_t__DOT__mem_write)
-			       ? (IData)(vlTOPp->rv32i_cpu_t__DOT__mask)
-			       : 0U);
 }
 
 void Vrv32i_cpu_t::_settle__TOP__2(Vrv32i_cpu_t__Syms* __restrict vlSymsp) {
@@ -773,7 +749,23 @@ void Vrv32i_cpu_t::_settle__TOP__2(Vrv32i_cpu_t__Syms* __restrict vlSymsp) {
     vlTOPp->rv32i_cpu_t__DOT__will_store = (8U == (0x1fU 
 						   & (vlTOPp->rv32i_cpu_t__DOT__inst 
 						      >> 2U)));
-    // ALWAYS at rtl/rv32i.v:186
+    vlTOPp->rv32i_cpu_t__DOT__st_addr = (vlTOPp->rv32i_cpu_t__DOT__X
+					 [(0x1fU & 
+					   (vlTOPp->rv32i_cpu_t__DOT__inst 
+					    >> 0xfU))] 
+					 + ((0xfffff800U 
+					     & (VL_NEGATE_I((IData)(
+								    (1U 
+								     & (vlTOPp->rv32i_cpu_t__DOT__inst 
+									>> 0x1fU)))) 
+						<< 0xbU)) 
+					    | ((0x7e0U 
+						& (vlTOPp->rv32i_cpu_t__DOT__inst 
+						   >> 0x14U)) 
+					       | (0x1fU 
+						  & (vlTOPp->rv32i_cpu_t__DOT__inst 
+						     >> 7U)))));
+    // ALWAYS at rtl/rv32i.v:182
     vlTOPp->__Vtableidx1 = (((0U != (0x1fU & (vlTOPp->rv32i_cpu_t__DOT__inst 
 					      >> 7U))) 
 			     << 5U) | (0x1fU & (vlTOPp->rv32i_cpu_t__DOT__inst 
@@ -783,6 +775,32 @@ void Vrv32i_cpu_t::_settle__TOP__2(Vrv32i_cpu_t__Syms* __restrict vlSymsp) {
     vlTOPp->rv32i_cpu_t__DOT____Vcellinp__out_shift____pinNumber3 
 	= vlTOPp->rv32i_cpu_t__DOT__X[(0x1fU & (vlTOPp->rv32i_cpu_t__DOT__inst 
 						>> 0x14U))];
+    // ALWAYS at rtl/rv32i.v:10
+    vlTOPp->__Vtableidx2 = (((IData)(vlTOPp->rv32i_cpu_t__DOT__mem_width) 
+			     << 2U) | (3U & vlTOPp->out_mem_addr));
+    vlTOPp->rv32i_cpu_t__DOT__mask = vlTOPp->__Vtable2_rv32i_cpu_t__DOT__mask
+	[vlTOPp->__Vtableidx2];
+    // ALWAYS at rtl/rv32i.v:57
+    if ((0U == (3U & vlTOPp->out_mem_addr))) {
+	vlTOPp->rv32i_cpu_t__DOT__mem_in = vlTOPp->in_data;
+    } else {
+	if ((1U == (3U & vlTOPp->out_mem_addr))) {
+	    vlTOPp->rv32i_cpu_t__DOT__mem_in = (0xffU 
+						& (vlTOPp->in_data 
+						   >> 8U));
+	} else {
+	    if ((2U == (3U & vlTOPp->out_mem_addr))) {
+		vlTOPp->rv32i_cpu_t__DOT__mem_in = 
+		    (0xffffU & (vlTOPp->in_data >> 0x10U));
+	    } else {
+		if ((3U == (3U & vlTOPp->out_mem_addr))) {
+		    vlTOPp->rv32i_cpu_t__DOT__mem_in 
+			= (0xffU & (vlTOPp->in_data 
+				    >> 0x18U));
+		}
+	    }
+	}
+    }
     vlTOPp->rv32i_cpu_t__DOT__immj = ((0xfff80000U 
 				       & (VL_NEGATE_I((IData)(
 							      (1U 
@@ -833,7 +851,15 @@ void Vrv32i_cpu_t::_settle__TOP__2(Vrv32i_cpu_t__Syms* __restrict vlSymsp) {
 						<< 0x10U)) 
 				| (0xffffU & vlTOPp->rv32i_cpu_t__DOT____Vcellinp__out_shift____pinNumber3))
 			     : vlTOPp->rv32i_cpu_t__DOT____Vcellinp__out_shift____pinNumber3));
-    // ALWAYS at rtl/rv32i.v:141
+    vlTOPp->out_write_mask = ((IData)(vlTOPp->rv32i_cpu_t__DOT__mem_write)
+			       ? (IData)(vlTOPp->rv32i_cpu_t__DOT__mask)
+			       : 0U);
+    vlTOPp->rv32i_cpu_t__DOT__ld_addr = (vlTOPp->rv32i_cpu_t__DOT__X
+					 [(0x1fU & 
+					   (vlTOPp->rv32i_cpu_t__DOT__inst 
+					    >> 0xfU))] 
+					 + vlTOPp->rv32i_cpu_t__DOT__immi);
+    // ALWAYS at rtl/rv32i.v:137
     vlTOPp->rv32i_cpu_t__DOT__next_pc = ((0x4000U & vlTOPp->rv32i_cpu_t__DOT__inst)
 					  ? ((0x2000U 
 					      & vlTOPp->rv32i_cpu_t__DOT__inst)
@@ -1244,59 +1270,7 @@ void Vrv32i_cpu_t::_settle__TOP__2(Vrv32i_cpu_t__Syms* __restrict vlSymsp) {
 				     [(0x1fU & (vlTOPp->rv32i_cpu_t__DOT__inst 
 						>> 0x14U))]
 				      : vlTOPp->rv32i_cpu_t__DOT__immi);
-    vlTOPp->out_mem_addr = ((0U == (IData)(vlTOPp->rv32i_cpu_t__DOT__phi))
-			     ? vlTOPp->rv32i_cpu_t__DOT__pc
-			     : ((0U == (0x1fU & (vlTOPp->rv32i_cpu_t__DOT__inst 
-						 >> 2U)))
-				 ? (vlTOPp->rv32i_cpu_t__DOT__X
-				    [(0x1fU & (vlTOPp->rv32i_cpu_t__DOT__inst 
-					       >> 0xfU))] 
-				    + vlTOPp->rv32i_cpu_t__DOT__immi)
-				 : (vlTOPp->rv32i_cpu_t__DOT__X
-				    [(0x1fU & (vlTOPp->rv32i_cpu_t__DOT__inst 
-					       >> 0xfU))] 
-				    + ((0xfffff800U 
-					& (VL_NEGATE_I((IData)(
-							       (1U 
-								& (vlTOPp->rv32i_cpu_t__DOT__inst 
-								   >> 0x1fU)))) 
-					   << 0xbU)) 
-				       | ((0x7e0U & 
-					   (vlTOPp->rv32i_cpu_t__DOT__inst 
-					    >> 0x14U)) 
-					  | (0x1fU 
-					     & (vlTOPp->rv32i_cpu_t__DOT__inst 
-						>> 7U)))))));
-    // ALWAYS at rtl/rv32i.v:10
-    vlTOPp->__Vtableidx2 = (((IData)(vlTOPp->rv32i_cpu_t__DOT__mem_width) 
-			     << 2U) | (3U & vlTOPp->out_mem_addr));
-    vlTOPp->rv32i_cpu_t__DOT__mask = vlTOPp->__Vtable2_rv32i_cpu_t__DOT__mask
-	[vlTOPp->__Vtableidx2];
-    // ALWAYS at rtl/rv32i.v:57
-    if ((0U == (3U & vlTOPp->out_mem_addr))) {
-	vlTOPp->rv32i_cpu_t__DOT__mem_in = vlTOPp->in_data;
-    } else {
-	if ((1U == (3U & vlTOPp->out_mem_addr))) {
-	    vlTOPp->rv32i_cpu_t__DOT__mem_in = (0xffU 
-						& (vlTOPp->in_data 
-						   >> 8U));
-	} else {
-	    if ((2U == (3U & vlTOPp->out_mem_addr))) {
-		vlTOPp->rv32i_cpu_t__DOT__mem_in = 
-		    (0xffffU & (vlTOPp->in_data >> 0x10U));
-	    } else {
-		if ((3U == (3U & vlTOPp->out_mem_addr))) {
-		    vlTOPp->rv32i_cpu_t__DOT__mem_in 
-			= (0xffU & (vlTOPp->in_data 
-				    >> 0x18U));
-		}
-	    }
-	}
-    }
-    vlTOPp->out_write_mask = ((IData)(vlTOPp->rv32i_cpu_t__DOT__mem_write)
-			       ? (IData)(vlTOPp->rv32i_cpu_t__DOT__mask)
-			       : 0U);
-    // ALWAYS at rtl/rv32i.v:158
+    // ALWAYS at rtl/rv32i.v:154
     vlTOPp->rv32i_cpu_t__DOT__res_alu = ((0x40000000U 
 					  & vlTOPp->rv32i_cpu_t__DOT__inst)
 					  ? ((0x4000U 
@@ -2584,7 +2558,7 @@ VL_INLINE_OPT void Vrv32i_cpu_t::_combo__TOP__3(Vrv32i_cpu_t__Syms* __restrict v
 	    }
 	}
     }
-    // ALWAYS at rtl/rv32i.v:158
+    // ALWAYS at rtl/rv32i.v:154
     vlTOPp->rv32i_cpu_t__DOT__res_alu = ((0x40000000U 
 					  & vlTOPp->rv32i_cpu_t__DOT__inst)
 					  ? ((0x4000U 
@@ -3924,6 +3898,8 @@ void Vrv32i_cpu_t::_ctor_var_reset() {
     rv32i_cpu_t__DOT__immi = VL_RAND_RESET_I(32);
     rv32i_cpu_t__DOT__immj = VL_RAND_RESET_I(32);
     rv32i_cpu_t__DOT__access_width = VL_RAND_RESET_I(3);
+    rv32i_cpu_t__DOT__ld_addr = VL_RAND_RESET_I(32);
+    rv32i_cpu_t__DOT__st_addr = VL_RAND_RESET_I(32);
     rv32i_cpu_t__DOT__will_read = VL_RAND_RESET_I(1);
     rv32i_cpu_t__DOT__will_store = VL_RAND_RESET_I(1);
     rv32i_cpu_t__DOT__pc_branch = VL_RAND_RESET_I(32);
@@ -3931,7 +3907,7 @@ void Vrv32i_cpu_t::_ctor_var_reset() {
     rv32i_cpu_t__DOT__rhs = VL_RAND_RESET_I(32);
     rv32i_cpu_t__DOT__res_alu = VL_RAND_RESET_I(32);
     rv32i_cpu_t__DOT__write_rd = VL_RAND_RESET_I(1);
-    rv32i_cpu_t__DOT__phi = VL_RAND_RESET_I(2);
+    rv32i_cpu_t__DOT__phi = VL_RAND_RESET_I(3);
     __Vtableidx1 = VL_RAND_RESET_I(6);
     __Vtable1_rv32i_cpu_t__DOT__write_rd[0] = 0U;
     __Vtable1_rv32i_cpu_t__DOT__write_rd[1] = 0U;

@@ -38,12 +38,14 @@ VL_MODULE(Vrv32i_cpu_t) {
     VL_SIG8(rv32i_cpu_t__DOT__will_read,0,0);
     VL_SIG8(rv32i_cpu_t__DOT__will_store,0,0);
     VL_SIG8(rv32i_cpu_t__DOT__write_rd,0,0);
-    VL_SIG8(rv32i_cpu_t__DOT__phi,1,0);
+    VL_SIG8(rv32i_cpu_t__DOT__phi,2,0);
     VL_SIG(rv32i_cpu_t__DOT__mem_in,31,0);
     VL_SIG(rv32i_cpu_t__DOT__pc,31,0);
     VL_SIG(rv32i_cpu_t__DOT__inst,31,0);
     VL_SIG(rv32i_cpu_t__DOT__immi,31,0);
     VL_SIG(rv32i_cpu_t__DOT__immj,31,0);
+    VL_SIG(rv32i_cpu_t__DOT__ld_addr,31,0);
+    VL_SIG(rv32i_cpu_t__DOT__st_addr,31,0);
     VL_SIG(rv32i_cpu_t__DOT__pc_branch,31,0);
     VL_SIG(rv32i_cpu_t__DOT__next_pc,31,0);
     VL_SIG(rv32i_cpu_t__DOT__rhs,31,0);

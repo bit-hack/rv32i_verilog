@@ -23,12 +23,26 @@ module top();
     $dumpvars;
     CLK <= 0;
     reset_cnt <= 0;
+    spi_miso <= 0;
     #100000 $finish;
   end
 
+  wire spi_mosi;
+  reg  spi_miso;
+  wire spi_clk;
+  wire spi_cs;
+  
   // instanciate the soc
   wire [7:0] leds;
   wire tx;
-  soc_t #(.ROM_FILE("tests/leds/out.hex")) soc(CLK, !resetn, leds, tx);
+  soc_t #(.ROM_FILE("tests/spi/out.hex"))
+      soc(CLK,
+          !resetn,
+          spi_miso,
+          leds,
+          tx,
+          spi_mosi,
+          spi_clk,
+          spi_cs);
 
 endmodule
