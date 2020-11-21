@@ -145,7 +145,7 @@ module spi_ctrl_t(input clk,
     if (wen) begin
       // new byte to send
       if (addr[7:0] == 8'd0) begin
-        clk_count <= clk_div;
+//      clk_count <= clk_div;
         srout     <= wdata[7:0];
         remain    <= 4'd8;
         sck       <= 0;
@@ -183,7 +183,7 @@ module spi_ctrl_t(input clk,
         if (remain != 0) begin
           sck <= !sck;
           if (sck) begin
-            srout  <= { srout[6:0], 1'b0 };
+            srout  <= { srout[6:0], 1'b1 };
             srin   <= {  srin[6:0], miso };
             remain <= remain - 4'd1;
           end

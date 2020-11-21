@@ -56,7 +56,7 @@ module in_shifter_t(input wire [1:0] addr,
                     );
   always @* begin
   case (addr)
-  0: out_data = in_data;
+  0: out_data =         in_data;
   1: out_data = {24'd0, in_data[15: 8]};
   2: out_data = {16'd0, in_data[31:16]};
   3: out_data = {24'd0, in_data[31:24]};
@@ -169,9 +169,9 @@ module rv32i_cpu_t(
     9'b?_111_0?100: res_alu = X[rs1] &    rhs;                            // AND,  ANDI
     9'b?_000_00000: res_alu = { {24{mem_in[ 7]}}, mem_in[ 7:0] };         // LB
     9'b?_001_00000: res_alu = { {16{mem_in[15]}}, mem_in[15:0] };         // LH
-    9'b?_010_00000: res_alu = mem_in;                                     // LW
-    9'b?_100_00000: res_alu = { 24'b0, mem_in[ 7:0] };                    // LBU
-    9'b?_101_00000: res_alu = { 16'b0, mem_in[15:0] };                    // LHU
+    9'b?_010_00000: res_alu =                     mem_in;                 // LW
+    9'b?_100_00000: res_alu = {  24'b0,           mem_in[ 7:0] };         // LBU
+    9'b?_101_00000: res_alu = {  16'b0,           mem_in[15:0] };         // LHU
     default:        res_alu = 32'b0;
     endcase
   end

@@ -1,9 +1,13 @@
 `default_nettype none
 `timescale 1ns / 1ps
 
-module top(input clk_25mhz,
-           inout [3:0] sd_d,  // mosi, nc, nc, cs
-           output sd_clk,      // spi_clk
+`include "../rtl/soc.v"
+`include "../rtl/rv32i.v"
+
+module top(input  clk_25mhz,
+           input  sd_d0,      // miso
+           output sd_d3,      // chip select
+           output sd_clk,     // spi_clk
            output sd_cmd,     // mosi
            output [7:0] led,
            output ftdi_rxd);
@@ -21,14 +25,14 @@ module top(input clk_25mhz,
   end
 
   // soc instance
-  soc_t #(.ROM_FILE("out.hex")) soc(
+  soc_t #(.ROM_FILE("../tests/sd_card/out.hex")) soc(
     clk_25mhz,
     !resetn,
-    sd_d[0]   // spi_miso
+    sd_d0,    // spi_miso
     led,
     ftdi_rxd, // tx
     sd_cmd,   // spi_mosi
     sd_clk,   // spi_clk
-    sd_d[3]); // spi_cs
+    sd_d3);   // spi_cs
 
 endmodule
