@@ -24,13 +24,111 @@ module bram_mem #(parameter ROM_FILE="") (
   end
 endmodule
 
+// simple uart receiver
+//
+// base + 0x0   = input data      (read only)   uint8_t
+// base + 0x4   = clock divider   (read/write)  uint32_t
+// base + 0x8   = uart status     (read/write)  uint8_t
+//
+// status bits:
+//    0x00  - idle
+//    0x01  - data pending
+//    0x02  - uart busy
+//    0x03  - uart busy and data pending
+//
+// write 0x00 to the status byte to clear pending status.
+//
+module uart_rx_t(input clk,
+                 input wen,
+                 input [31:0] addr,
+                 input [31:0] wdata,
+                 input rx,
+                 output reg [31:0] rdata);
+
+  reg [31:0] clk_div;
+  reg [31:0] clk_count;
+  reg [7:0] data;
+  reg [3:0] count;
+  reg rx_;
+
+  // busy when currently receiving
+  wire busy = count != 0;
+  // 1 when data is waiting
+  reg pending;
+
+  initial begin
+    clk_div   <= 8;
+    clk_count <= 8;
+    data      <= 0; // idle state
+    count     <= 0;
+    rx_       <= 1;
+    pending   <= 0;
+  end
+
+  always @(posedge clk) begin
+    if (wen) begin
+      // set clock divider
+      if (addr[7:0] == 8'd4) begin
+        clk_div   <= wdata;
+        clk_count <= wdata;
+      end
+      // clear rx status
+      if (addr[7:0] == 8'd8) begin
+        pending <= 0;
+      end
+    end else begin
+      // read input data
+      if (addr[7:0] == 8'd0) begin
+        rdata   <= data;
+      end
+      // read clock divider
+      if (addr[7:0] == 8'd4) begin
+        rdata <= clk_div;
+      end
+      // read rx status
+      if (addr[7:0] == 8'd8) begin
+        rdata <= { 30'd0, busy, pending };
+      end
+
+      // if we are idle
+      if (count == 0) begin
+        // if start bit has been detected
+        if (rx_ == 1 && rx == 0) begin
+          // mark that data is pending, yet they wont be able to read it
+          // until the busy flag disapears
+          pending   <= 1;
+          // set clock count to 1/2 clk_div so we start samping half way
+          // through the data cycle
+          clk_count <= { 1'b0, clk_div[31:1] };
+          // 8 bits + start bit
+          count <= 9;
+        end
+      end else begin
+        // time to sample the data
+        if (clk_count == 0) begin
+          // shift the data in
+          data <= { rx, data[7:1] };
+          // reduce count by one
+          count <= count - 1;
+          // prime the next counter
+          clk_count <= clk_div;
+        end else begin
+          clk_count <= clk_count - 1;
+        end
+      end
+      // update the edge detector
+      rx_ = rx;
+    end
+  end
+endmodule
+
 // simple uart transmitter
-module uart_t(input clk,
-              input wen,
-              input [31:0] addr,
-              input [31:0] wdata,
-              output reg [31:0] rdata,
-              output reg tx);
+module uart_tx_t(input clk,
+                 input wen,
+                 input [31:0] addr,
+                 input [31:0] wdata,
+                 output reg [31:0] rdata,
+                 output reg tx);
 
   localparam STATE_IDLE   = 0;
   localparam STATE_START  = 1;
@@ -200,6 +298,7 @@ module soc_t #(parameter ROM_FILE="") (
     input CLK,
     input reset,
     input wire spi_miso,
+    input wire rx,
     output wire [7:0] leds,
     output wire tx,
     output wire spi_mosi,
@@ -209,28 +308,49 @@ module soc_t #(parameter ROM_FILE="") (
   // LED peripheral
   reg[7:0] led_state;
   assign leds = led_state;
-  always @(negedge CLK) begin
+  always @(posedge CLK) begin
     if (sel_led && is_write) begin
       led_state <= cpu_out_data[7:0];
     end
   end
 
   // address decoding
-  wire is_write  = |cpu_write_mask;
-  wire is_read   = !is_write;
-  wire sel_bram  = (cpu_addr[31:24] ==  8'hf0);        // 0xf0000000 -> 0xf0ffffff
-  wire sel_led   = (cpu_addr[31: 8] == 24'h100000);    // 0x10000000 -> 0x100000ff
-  wire sel_uart  = (cpu_addr[31: 8] == 24'h100001);    // 0x10000100 -> 0x100001ff
-  wire sel_spi   = (cpu_addr[31: 8] == 24'h100002);    // 0x10000200 -> 0x100002ff
+  wire is_write    = |cpu_write_mask;
+  wire is_read     = !is_write;
+  wire sel_bram    = (cpu_addr[31:24] ==  8'hf0);        // 0xf0000000 -> 0xf0ffffff
+  wire sel_led     = (cpu_addr[31: 8] == 24'h100000);    // 0x10000000 -> 0x100000ff
+  wire sel_uart_tx = (cpu_addr[31: 8] == 24'h100001);    // 0x10000100 -> 0x100001ff
+  wire sel_spi     = (cpu_addr[31: 8] == 24'h100002);    // 0x10000200 -> 0x100002ff
+  wire sel_uart_rx = (cpu_addr[31: 8] == 24'h100003);    // 0x10000300 -> 0x100003ff
+
+  wire [31:0] cpu_in_data =  sel_bram    ? bram_dout :
+                            (sel_led     ? led_state :
+                            (sel_uart_tx ? uart_tx_dout :
+                            (sel_spi     ? spi_dout :
+                            (sel_uart_rx ? uart_rx_dout :
+                             32'd0))));
+
+//  // select data being read into the CPU
+//  reg [31:0] cpu_in_data;
+//  always @* begin
+//  casez (cpu_addr[31: 8])
+//  24'hf0????: cpu_in_data = bram_dout;
+//  24'h100000: cpu_in_data = led_state;
+//  24'h100001: cpu_in_data = uart_tx_dout;
+//  24'h100002: cpu_in_data = spi_dout;
+//  24'h100003: cpu_in_data = uart_rx_dout;
+//  default:    cpu_in_data = 32'd0;
+//  endcase
+//  end
 
   // uart transmitter
-  wire [31:0] uart_dout;
-  uart_t uart(CLK,
-              sel_uart & is_write,
-              cpu_addr,
-              cpu_out_data,
-              uart_dout,
-              tx);
+  wire [31:0] uart_tx_dout;
+  uart_tx_t uart_tx(CLK,
+                    sel_uart_tx & is_write,
+                    cpu_addr,
+                    cpu_out_data,
+                    uart_tx_dout,
+                    tx);
 
   // spi controller
   wire [31:0] spi_dout;
@@ -245,12 +365,14 @@ module soc_t #(parameter ROM_FILE="") (
                  spi_cs,
                  spi_mosi);
 
-  // data being read into the CPU
-  wire [31:0] cpu_in_data = (sel_bram  ? bram_dout :
-                            (sel_led   ? led_state :
-                            (sel_uart  ? uart_dout :
-                            (sel_spi   ? spi_dout  :
-                                         32'd0))));
+  // uart receiver
+  wire [31:0] uart_rx_dout;
+  uart_rx_t uart_rx(CLK,
+                    sel_uart_rx & is_write,
+                    cpu_addr,
+                    cpu_out_data,
+                    rx,
+                    uart_rx_dout);
 
   // block ram (16kb)
   wire [31:0] bram_dout;

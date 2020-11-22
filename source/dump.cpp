@@ -23,7 +23,7 @@ int main(int argc, char **args) {
   }
 
   const uint32_t base = 0xf0000000;
-  for (int i = 0; i < 512; i += 4) {
+  for (int i = 0; i < 1024; i += 4) {
     const uint32_t val = mem.read_w(base + i);
     fprintf(out, "%08x\n", val);
   }

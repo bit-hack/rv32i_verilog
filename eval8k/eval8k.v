@@ -1,7 +1,7 @@
 `default_nettype none
 `timescale 1ns / 1ps
 
-module top(input CLK, output [7:0] LED, output TX);
+module top(input CLK, input RX, output [7:0] LED, output TX);
 
   // initial state
   initial begin
@@ -27,6 +27,7 @@ module top(input CLK, output [7:0] LED, output TX);
       soc(CLK,
           !resetn,
           spi_miso,
+          RX,
           LED,
           TX,
           spi_mosi,

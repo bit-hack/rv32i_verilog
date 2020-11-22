@@ -5,7 +5,7 @@ const char *message = "Hello World\r\n";
 
 enum {
   clk_speed = 25000000,
-  uart_rate = clk_speed / 9600,
+  uart_rate = 16, // clk_speed / 9600,
 };
 
 int main() {
