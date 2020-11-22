@@ -1,12 +1,17 @@
 `default_nettype none
 `timescale 1ns / 1ps
 
-module top(input CLK, output [7:0] LED, output TX);
+module top(input CLK,
+           input SPI_MISO,
+           output SPI_CLK,
+           output SPI_MOSI,
+           output SPI_CS,
+           output [7:0] LED,
+           output TX);
 
   // initial state
   initial begin
     reset_cnt <= 10'd0;
-    spi_miso <= 1'b0;
   end
 
   // reset generator
@@ -17,20 +22,15 @@ module top(input CLK, output [7:0] LED, output TX);
     reset_cnt <= reset_cnt + !resetn;
   end
 
-  wire spi_mosi;
-  reg  spi_miso;
-  wire spi_clk;
-  wire spi_cs;
-
   // instanciate the soc  
-  soc_t #(.ROM_FILE("rom_uart.hex"))
+  soc_t #(.ROM_FILE("../tests/spi/out.hex"))
       soc(CLK,
           !resetn,
-          spi_miso,
+          SPI_MISO,
           LED,
           TX,
-          spi_mosi,
-          spi_clk,
-          spi_cs);
+          SPI_MOSI,
+          SPI_CLK,
+          SPI_CS);
   
 endmodule
