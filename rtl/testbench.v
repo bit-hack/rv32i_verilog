@@ -24,7 +24,7 @@ module top();
     CLK <= 0;
     reset_cnt <= 0;
     spi_miso <= 0;
-    #2000000 $finish;
+    #200000 $finish;
   end
 
   wire spi_mosi;
@@ -35,10 +35,12 @@ module top();
   // instanciate the soc
   wire [7:0] leds;
   wire tx;
-  soc_t #(.ROM_FILE("tests/sd_card/out.hex"))
+  wire rx = tx;
+  soc_t #(.ROM_FILE("tests/uart/out.hex"))
       soc(CLK,
           !resetn,
           spi_miso,
+          rx,
           leds,
           tx,
           spi_mosi,

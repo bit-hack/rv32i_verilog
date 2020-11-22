@@ -1,19 +1,19 @@
 #include <stdint.h>
 #include "../common.h"
 
-const char *message = "Hello World\r\n";
-
 enum {
   clk_speed = 25000000,
-  uart_rate = 16, // clk_speed / 9600,
+  uart_rate = clk_speed / 9600,
 };
 
 int main() {
   *hw_leds = 0;
   uart_set_clock_div(uart_rate);
   for (;;) {
-    uart_send_string(message);
-    delay(1000000);
-    ++(*hw_leds);
+    if (uart_recv_pending()) {
+      uint8_t r = uart_recv_byte();
+      uart_send_byte(r);
+      *hw_leds = r;
+    }
   }
 }

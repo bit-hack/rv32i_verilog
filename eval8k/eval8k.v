@@ -2,6 +2,7 @@
 `timescale 1ns / 1ps
 
 module top(input CLK,
+           input RX,
            input SPI_MISO,
            output SPI_CLK,
            output SPI_MOSI,
@@ -23,10 +24,11 @@ module top(input CLK,
   end
 
   // instanciate the soc  
-  soc_t #(.ROM_FILE("../tests/spi/out.hex"))
+  soc_t #(.ROM_FILE("rom_uart.hex"))
       soc(CLK,
           !resetn,
           SPI_MISO,
+          RX,
           LED,
           TX,
           SPI_MOSI,
