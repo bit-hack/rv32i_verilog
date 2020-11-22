@@ -323,25 +323,18 @@ module soc_t #(parameter ROM_FILE="") (
   wire sel_spi     = (cpu_addr[31: 8] == 24'h100002);    // 0x10000200 -> 0x100002ff
   wire sel_uart_rx = (cpu_addr[31: 8] == 24'h100003);    // 0x10000300 -> 0x100003ff
 
-  wire [31:0] cpu_in_data =  sel_bram    ? bram_dout :
-                            (sel_led     ? led_state :
-                            (sel_uart_tx ? uart_tx_dout :
-                            (sel_spi     ? spi_dout :
-                            (sel_uart_rx ? uart_rx_dout :
-                             32'd0))));
-
-//  // select data being read into the CPU
-//  reg [31:0] cpu_in_data;
-//  always @* begin
-//  casez (cpu_addr[31: 8])
-//  24'hf0????: cpu_in_data = bram_dout;
-//  24'h100000: cpu_in_data = led_state;
-//  24'h100001: cpu_in_data = uart_tx_dout;
-//  24'h100002: cpu_in_data = spi_dout;
-//  24'h100003: cpu_in_data = uart_rx_dout;
-//  default:    cpu_in_data = 32'd0;
-//  endcase
-//  end
+  // select data being read into the CPU
+  reg [31:0] cpu_in_data;
+  always @* begin
+  casez (cpu_addr[31: 8])
+  24'hf0????: cpu_in_data = bram_dout;
+  24'h100000: cpu_in_data = led_state;
+  24'h100001: cpu_in_data = uart_tx_dout;
+  24'h100002: cpu_in_data = spi_dout;
+  24'h100003: cpu_in_data = uart_rx_dout;
+  default:    cpu_in_data = 32'd0;
+  endcase
+  end
 
   // uart transmitter
   wire [31:0] uart_tx_dout;
