@@ -22,7 +22,8 @@ set_io --warn-no-port  DTR A16  # in
 set_io --warn-no-port  CTS A15  # out
 set_io --warn-no-port  RTS B13  # in
 
-# I2S
-set_io --warn-no-port  I2S[0] M15  # LRCLK
-set_io --warn-no-port  I2S[1] P15  # DATA
-set_io --warn-no-port  I2S[2] R15  # BCLK
+# SPI
+set_io --warn-no-port  SPI_CLK  R15  #
+set_io --warn-no-port  SPI_MOSI P15  #
+set_io --warn-no-port  SPI_MISO M15  #
+set_io --warn-no-port  SPI_CS   L16  #

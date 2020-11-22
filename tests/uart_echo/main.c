@@ -2,7 +2,7 @@
 #include "../common.h"
 
 enum {
-  clk_speed = 25000000,
+  clk_speed = 12000000,
   uart_rate = clk_speed / 9600,
 };
 

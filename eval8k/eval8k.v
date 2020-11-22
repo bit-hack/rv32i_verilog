@@ -24,7 +24,7 @@ module top(input CLK,
   end
 
   // instanciate the soc  
-  soc_t #(.ROM_FILE("rom_uart.hex"))
+  soc_t #(.ROM_FILE("../tests/uart_echo/out.hex"))
       soc(CLK,
           !resetn,
           SPI_MISO,
