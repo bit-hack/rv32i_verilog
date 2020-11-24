@@ -142,7 +142,7 @@ module rv32i_cpu_t(
     8'b101_11000: next_pc = ($signed(X[rs1]) >= $signed(X[rs2])) ? pc_branch : pc_step; // BGE
     8'b110_11000: next_pc = (X[rs1] <  X[rs2])                   ? pc_branch : pc_step; // BLTU
     8'b111_11000: next_pc = (X[rs1] >= X[rs2])                   ? pc_branch : pc_step; // BGEU
-    8'b???_11001: next_pc = (immi + X[rs1]) & 32'hfffffffe;                             // JALR
+    8'b???_11001: next_pc = (X[rs1] + immi) & 32'hfffffffe;                             // JALR
     8'b???_11011: next_pc = pc + immj;                                                  // JAL
     default:      next_pc = pc_step;
     endcase

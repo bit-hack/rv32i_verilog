@@ -31,12 +31,14 @@ module top();
   reg  spi_miso;
   wire spi_clk;
   wire spi_cs;
-  
+
+  wire gpio;
+
   // instanciate the soc
   wire [7:0] leds;
   wire tx;
   wire rx = tx;
-  soc_t #(.ROM_FILE("tests/uart/out.hex"))
+  soc_t #(.ROM_FILE("tests/gpio/out.hex"))
       soc(CLK,
           !resetn,
           spi_miso,
@@ -45,6 +47,7 @@ module top();
           tx,
           spi_mosi,
           spi_clk,
-          spi_cs);
+          spi_cs,
+          gpio);
 
 endmodule

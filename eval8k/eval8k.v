@@ -4,6 +4,7 @@
 module top(input CLK,
            input RX,
            input SPI_MISO,
+           inout GPIO,
            output SPI_CLK,
            output SPI_MOSI,
            output SPI_CS,
@@ -23,8 +24,8 @@ module top(input CLK,
     reset_cnt <= reset_cnt + !resetn;
   end
 
-  // instanciate the soc  
-  soc_t #(.ROM_FILE("../tests/uart_echo/out.hex"))
+  // instanciate the soc
+  soc_t #(.ROM_FILE("../tests/lcd/out.hex"))
       soc(CLK,
           !resetn,
           SPI_MISO,
@@ -33,6 +34,7 @@ module top(input CLK,
           TX,
           SPI_MOSI,
           SPI_CLK,
-          SPI_CS);
-  
+          SPI_CS,
+          GPIO);
+
 endmodule

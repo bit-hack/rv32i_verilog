@@ -243,7 +243,6 @@ module spi_ctrl_t(input clk,
     if (wen) begin
       // new byte to send
       if (addr[7:0] == 8'd0) begin
-//      clk_count <= clk_div;
         srout     <= wdata[7:0];
         remain    <= 4'd8;
         sck       <= 0;
@@ -293,6 +292,43 @@ module spi_ctrl_t(input clk,
   end
 endmodule
 
+// general purpose input output
+module gpio_t(input clk,
+              input reset,
+              input wen,
+              input [31:0] addr,
+              input [31:0] wdata,
+              inout gpio_pin,
+              output reg [31:0] rdata);
+
+  reg gpio_out;
+  reg gpio_oe;
+
+  // tri-state pin interface
+  assign gpio_pin = gpio_oe ? gpio_out : 1'bz;
+
+  always @(posedge clk) begin
+    if (reset) begin
+      gpio_out <= 0;
+      gpio_oe  <= 0;
+    end else begin
+      if (wen) begin
+        // write GPIO state
+        case (addr[7:0])
+        8'h00:   gpio_out <= wdata[0];  // output
+        8'h04:   gpio_oe  <= wdata[0];  // enable
+        endcase
+      end
+    end
+    // read GPIO state
+    case (addr[7:0])
+    8'h00:   rdata <= { 31'd0, gpio_pin };  // input
+    8'h04:   rdata <= { 31'd0, gpio_oe };   // enable
+    default: rdata <=   32'd0;
+    endcase
+  end
+endmodule
+
 // system on chip instance
 module soc_t #(parameter ROM_FILE="") (
     input CLK,
@@ -303,7 +339,18 @@ module soc_t #(parameter ROM_FILE="") (
     output wire tx,
     output wire spi_mosi,
     output wire spi_sck,
-    output wire spi_cs);
+    output wire spi_cs,
+    inout gpio);
+
+  // GPIO peripheral
+  wire [31:0] gpio_dout;
+  gpio_t gpio_inst(.clk(CLK),
+                   .reset(reset),
+                   .wen(sel_gpio & is_write),
+                   .addr(cpu_addr),
+                   .wdata(cpu_out_data),
+                   .gpio_pin(gpio),
+                   .rdata(gpio_dout));
 
   // LED peripheral
   reg[7:0] led_state;
@@ -322,18 +369,20 @@ module soc_t #(parameter ROM_FILE="") (
   wire sel_uart_tx = (cpu_addr[31: 8] == 24'h100001);    // 0x10000100 -> 0x100001ff
   wire sel_spi     = (cpu_addr[31: 8] == 24'h100002);    // 0x10000200 -> 0x100002ff
   wire sel_uart_rx = (cpu_addr[31: 8] == 24'h100003);    // 0x10000300 -> 0x100003ff
+  wire sel_gpio    = (cpu_addr[31: 8] == 24'h100004);    // 0x10000400 -> 0x100004ff
 
   // select data being read into the CPU
   reg [31:0] cpu_in_data;
   always @* begin
-  casez (cpu_addr[31: 8])
-  24'hf0????: cpu_in_data = bram_dout;
-  24'h100000: cpu_in_data = led_state;
-  24'h100001: cpu_in_data = uart_tx_dout;
-  24'h100002: cpu_in_data = spi_dout;
-  24'h100003: cpu_in_data = uart_rx_dout;
-  default:    cpu_in_data = 32'd0;
-  endcase
+    casez (cpu_addr[31:8])
+    24'hf0????: cpu_in_data = bram_dout;
+    24'h100000: cpu_in_data = led_state;
+    24'h100001: cpu_in_data = uart_tx_dout;
+    24'h100002: cpu_in_data = spi_dout;
+    24'h100003: cpu_in_data = uart_rx_dout;
+    24'h100004: cpu_in_data = gpio_dout;
+    default:    cpu_in_data = 32'd0;
+    endcase
   end
 
   // uart transmitter
@@ -390,6 +439,6 @@ module soc_t #(parameter ROM_FILE="") (
         cpu_in_data,
         cpu_write_mask,
         cpu_addr,
-        cpu_out_data
-      );
+        cpu_out_data);
+
 endmodule
