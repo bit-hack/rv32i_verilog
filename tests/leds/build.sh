@@ -1,4 +1,4 @@
-TOOLCHAIN=/c/repos/riscv/riscv64-unknown-elf-gcc-8.3.0-2020.04.0-x86_64-w64-mingw32
+TOOLCHAIN=/c/repos/riscv64-unknown-elf-gcc-8.3.0-2020.04.0-x86_64-w64-mingw32
 
 rm out.dasm
 rm out.elf
