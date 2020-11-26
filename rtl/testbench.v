@@ -38,16 +38,16 @@ module top();
   wire [7:0] leds;
   wire tx;
   wire rx = tx;
-  soc_t #(.ROM_FILE("tests/gpio/out.hex"))
-      soc(CLK,
-          !resetn,
-          spi_miso,
-          rx,
-          leds,
-          tx,
-          spi_mosi,
-          spi_clk,
-          spi_cs,
-          gpio);
+  soc_t #(.ROM_FILE("tests/leds/out.hex"))
+      soc(.clk(CLK),
+          .reset(!resetn),
+          .spi_miso(spi_miso),
+          .rx(rx),
+          .leds(leds),
+          .tx(tx),
+          .spi_mosi(spi_mosi),
+          .spi_sck(spi_clk),
+          .spi_cs(spi_cs),
+          .gpio(gpio));
 
 endmodule

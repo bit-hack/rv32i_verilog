@@ -331,7 +331,7 @@ endmodule
 
 // system on chip instance
 module soc_t #(parameter ROM_FILE="") (
-    input CLK,
+    input clk,
     input reset,
     input wire spi_miso,
     input wire rx,
@@ -344,7 +344,7 @@ module soc_t #(parameter ROM_FILE="") (
 
   // GPIO peripheral
   wire [31:0] gpio_dout;
-  gpio_t gpio_inst(.clk(CLK),
+  gpio_t gpio_inst(.clk(clk),
                    .reset(reset),
                    .wen(sel_gpio & is_write),
                    .addr(cpu_addr),
@@ -355,7 +355,7 @@ module soc_t #(parameter ROM_FILE="") (
   // LED peripheral
   reg[7:0] led_state;
   assign leds = led_state;
-  always @(posedge CLK) begin
+  always @(posedge clk) begin
     if (sel_led && is_write) begin
       led_state <= cpu_out_data[7:0];
     end
@@ -387,43 +387,43 @@ module soc_t #(parameter ROM_FILE="") (
 
   // uart transmitter
   wire [31:0] uart_tx_dout;
-  uart_tx_t uart_tx(CLK,
-                    sel_uart_tx & is_write,
-                    cpu_addr,
-                    cpu_out_data,
-                    uart_tx_dout,
-                    tx);
+  uart_tx_t uart_tx(.clk(clk),
+                    .wen(sel_uart_tx & is_write),
+                    .addr(cpu_addr),
+                    .wdata(cpu_out_data),
+                    .rdata(uart_tx_dout),
+                    .tx(tx));
 
   // spi controller
   wire [31:0] spi_dout;
-  spi_ctrl_t spi(CLK,
-                 reset,
-                 sel_spi & is_write,
-                 cpu_addr,
-                 cpu_out_data,
-                 spi_miso,
-                 spi_dout,
-                 spi_sck,
-                 spi_cs,
-                 spi_mosi);
+  spi_ctrl_t spi(.clk(clk),
+                 .reset(reset),
+                 .wen(sel_spi & is_write),
+                 .addr(cpu_addr),
+                 .wdata(cpu_out_data),
+                 .miso(spi_miso),
+                 .rdata(spi_dout),
+                 .sck(spi_sck),
+                 .cs(spi_cs),
+                 .mosi(spi_mosi));
 
   // uart receiver
   wire [31:0] uart_rx_dout;
-  uart_rx_t uart_rx(CLK,
-                    sel_uart_rx & is_write,
-                    cpu_addr,
-                    cpu_out_data,
-                    rx,
-                    uart_rx_dout);
+  uart_rx_t uart_rx(.clk(clk),
+                    .wen(sel_uart_rx & is_write),
+                    .addr(cpu_addr),
+                    .wdata(cpu_out_data),
+                    .rx(rx),
+                    .rdata(uart_rx_dout));
 
   // block ram (16kb)
   wire [31:0] bram_dout;
   bram_mem #(.ROM_FILE(ROM_FILE))
-      ram1(CLK,
-           (sel_bram ? cpu_write_mask : 4'd0),
-           cpu_addr[13:2],
-           cpu_out_data,
-           bram_dout);
+      ram1(.clk(clk),
+           .wen(sel_bram ? cpu_write_mask : 4'd0),
+           .addr(cpu_addr[13:2]),
+           .wdata(cpu_out_data),
+           .rdata(bram_dout));
 
   // the CPU
   wire [31:0] cpu_out_data;
@@ -433,12 +433,12 @@ module soc_t #(parameter ROM_FILE="") (
       #(.RESET_VECTOR (32'hf0000000),
         .STACK_POINTER(32'hf0ffffff))
       cpu(
-        CLK,
-        reset,
-        1'b0,
-        cpu_in_data,
-        cpu_write_mask,
-        cpu_addr,
-        cpu_out_data);
+        .clk(clk),
+        .reset(reset),
+        .hold(1'b0),
+        .in_data(cpu_in_data),
+        .out_write_mask(cpu_write_mask),
+        .out_mem_addr(cpu_addr),
+        .out_data(cpu_out_data));
 
 endmodule

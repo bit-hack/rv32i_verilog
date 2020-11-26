@@ -88,13 +88,20 @@ module rv32i_cpu_t(
 
   // input output data shifters
   wire [31:0] mem_in;
-  in_shifter_t  in_shift (out_mem_addr[1:0], mem_width, in_data, mem_in);
+  in_shifter_t  in_shift (.addr(out_mem_addr[1:0]),
+                          .width(mem_width),
+                          .in_data(in_data),
+                          .out_data(mem_in));
   // note: for store instructions the data always comes from X[rs2].
-  out_shifter_t out_shift(out_mem_addr[1:0], mem_width, X[rs2], out_data);
-
+  out_shifter_t out_shift(.addr(out_mem_addr[1:0]),
+                          .width(mem_width),
+                          .in_data(X[rs2]),
+                          .out_data(out_data));
   // write mask generator, a bit corresponds to one byte in the 32bit word
   wire [3:0] mask;
-  store_mask_t mask_gen(out_mem_addr[1:0], mem_width, mask);
+  store_mask_t mask_gen(.addr(out_mem_addr[1:0]),
+                        .width(mem_width),
+                        .mask(mask));
   assign out_write_mask = mem_write ? mask : 4'b0;
 
   reg [31:0] pc;    // program counter
