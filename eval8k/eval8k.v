@@ -25,7 +25,7 @@ module top(input CLK,
   end
 
   // instanciate the soc
-  soc_t #(.ROM_FILE("../tests/lcd/out.hex"))
+  soc_t #(.ROM_FILE("../tests/leds/out.hex"))
       soc(CLK,
           !resetn,
           SPI_MISO,

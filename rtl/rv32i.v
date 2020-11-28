@@ -1,52 +1,6 @@
 `default_nettype none
 `timescale 1ns / 1ps
 
-// this takes the low two bits of the address bus and the memory access
-// width and produces a storage mask.
-module store_mask_t(input wire [1:0] addr,
-                    input wire [2:0] width,
-                    output reg [3:0] mask
-                    );
-  always @* begin
-  case (addr)
-  0: case (width)
-    1:       mask = 4'b0001;
-    2:       mask = 4'b0011;
-    default: mask = 4'b1111;
-    endcase
-  1: case (width)
-    1:       mask = 4'b0010;
-    default: mask = 4'b0000; // illegal
-    endcase
-  2: case (width)
-    1:       mask = 4'b0100;
-    2:       mask = 4'b1100;
-    default: mask = 4'b0000; // illegal
-    endcase
-  3: case (width)
-    1:       mask = 4'b1000;
-    default: mask = 4'b0000; // illegal
-    endcase
-  endcase
-  end
-endmodule
-
-// this takes an aligned 32bit input value and correctly shifts the contents
-// to reflect the address and memory access width. mirrors in_shifter_t.
-module out_shifter_t(input wire [1:0] addr,
-                     input wire [2:0] width,
-                     input wire [31:0] in_data,
-                     output reg [31:0] out_data
-                     );
-  always @* begin
-  case (width)
-  1:       out_data = {in_data[7:0], in_data[7:0], in_data[7:0], in_data[7:0]};
-  2:       out_data = {in_data[15:0], in_data[15:0]};
-  default: out_data = in_data;
-  endcase
-  end
-endmodule
-
 // this takes an aligned 32bit input value and correctly shifts the contents
 // to reflect the address and memory access width. mirrors out_shifter_t.
 module in_shifter_t(input wire [1:0] addr,
@@ -57,9 +11,9 @@ module in_shifter_t(input wire [1:0] addr,
   always @* begin
   case (addr)
   0: out_data =         in_data;
-  1: out_data = {24'd0, in_data[15: 8]};
-  2: out_data = {16'd0, in_data[31:16]};
-  3: out_data = {24'd0, in_data[31:24]};
+  1: out_data = {24'dX, in_data[15: 8]};
+  2: out_data = {16'dX, in_data[31:16]};
+  3: out_data = {24'dX, in_data[31:24]};
   endcase
   end
 endmodule
@@ -70,9 +24,11 @@ module rv32i_cpu_t(
     input wire reset,                  // high to reset processor
     input wire hold,                   // high to stall cpu
     input  wire [31:0] in_data,        // (word aligned) word read from memory
-    output wire [3:0]  out_write_mask, // 4 bit write mask
+    output reg  [ 3:0] out_wr_mask,    // 4 bit write mask
     output reg  [31:0] out_mem_addr,   // memory access address
-    output wire [31:0] out_data        // (word aligned) word to store in memory
+    output reg  [31:0] out_data,       // (word aligned) word to store in memory
+    output reg out_wr,                 // memory write
+    output reg out_rd                  // memory read
     );
 
   localparam REG_ZERO = 0;
@@ -83,26 +39,15 @@ module rv32i_cpu_t(
   // default stack pointer to use
   parameter STACK_POINTER = 32'hffffffff;
 
-  reg mem_write;
-  reg [2:0] mem_width; // width of memory access (1, 2 or 4)
-
-  // input output data shifters
+  // input data shifter
   wire [31:0] mem_in;
-  in_shifter_t  in_shift (.addr(out_mem_addr[1:0]),
-                          .width(mem_width),
-                          .in_data(in_data),
-                          .out_data(mem_in));
+  in_shifter_t  in_shift(.addr(out_mem_addr[1:0]),
+                         .width(access_width),
+                         .in_data(in_data),
+                         .out_data(mem_in));
+
   // note: for store instructions the data always comes from X[rs2].
-  out_shifter_t out_shift(.addr(out_mem_addr[1:0]),
-                          .width(mem_width),
-                          .in_data(X[rs2]),
-                          .out_data(out_data));
-  // write mask generator, a bit corresponds to one byte in the 32bit word
-  wire [3:0] mask;
-  store_mask_t mask_gen(.addr(out_mem_addr[1:0]),
-                        .width(mem_width),
-                        .mask(mask));
-  assign out_write_mask = mem_write ? mask : 4'b0;
+  wire [31:0] st_data = X[rs2];
 
   reg [31:0] pc;    // program counter
   reg [31:0] inst;  // instruction latch
@@ -124,7 +69,7 @@ module rv32i_cpu_t(
   // bit 30 differentiates some instructions (e.g. add/sub, ...)
   wire bit30 = inst[30];
 
-  // width of memory access (1 byte, 3 half, 7 word)
+  // width of memory access
   wire [2:0] access_width =  (funct3 == 0 || funct3 == 4) ? 1 :  // byte
                             ((funct3 == 1 || funct3 == 5) ? 2 :  // half
                                                             4);  // word
@@ -132,54 +77,50 @@ module rv32i_cpu_t(
   wire [31:0] ld_addr  = X[rs1] + immi;
   wire [31:0] st_addr  = X[rs1] + imms;
 
-  // signal memory read
-  wire will_read  = (group == 5'b00000);                      // load
-  // signal memory write
-  wire will_store = (group == 5'b01000);                      // store
-
   // propose what the next pc should be
   wire [31:0] pc_step   = pc + 4;
   wire [31:0] pc_branch = pc + immb;
   reg [31:0] next_pc;
   always @* begin
     casez({funct3, group})
-    8'b000_11000: next_pc = (X[rs1] == X[rs2])                   ? pc_branch : pc_step; // BEQ
-    8'b001_11000: next_pc = (X[rs1] != X[rs2])                   ? pc_branch : pc_step; // BNE
-    8'b100_11000: next_pc = ($signed(X[rs1]) <  $signed(X[rs2])) ? pc_branch : pc_step; // BLT
-    8'b101_11000: next_pc = ($signed(X[rs1]) >= $signed(X[rs2])) ? pc_branch : pc_step; // BGE
-    8'b110_11000: next_pc = (X[rs1] <  X[rs2])                   ? pc_branch : pc_step; // BLTU
-    8'b111_11000: next_pc = (X[rs1] >= X[rs2])                   ? pc_branch : pc_step; // BGEU
-    8'b???_11001: next_pc = (X[rs1] + immi) & 32'hfffffffe;                             // JALR
-    8'b???_11011: next_pc = pc + immj;                                                  // JAL
+    8'b000_11000: next_pc = (lhs == rhs)                   ? pc_branch : pc_step; // BEQ
+    8'b001_11000: next_pc = (lhs != rhs)                   ? pc_branch : pc_step; // BNE
+    8'b100_11000: next_pc = ($signed(lhs) <  $signed(rhs)) ? pc_branch : pc_step; // BLT
+    8'b101_11000: next_pc = ($signed(lhs) >= $signed(rhs)) ? pc_branch : pc_step; // BGE
+    8'b110_11000: next_pc = (lhs <  rhs)                   ? pc_branch : pc_step; // BLTU
+    8'b111_11000: next_pc = (lhs >= rhs)                   ? pc_branch : pc_step; // BGEU
+    8'b???_11001: next_pc = (lhs + immi) & 32'hfffffffe;                          // JALR
+    8'b???_11011: next_pc = pc + immj;                                            // JAL
     default:      next_pc = pc_step;
     endcase
   end
 
   // ALU
+  wire [31:0] lhs = X[rs1];
   wire [31:0] rhs = (group == 'b01100) ? X[rs2] : immi;
   reg [31:0] res_alu;
   always @* begin
     casez({bit30, funct3, group})
-    9'b?_???_01101: res_alu = immu;                                       // LUI
-    9'b?_???_00101: res_alu = immu + pc;                                  // AUIPC
-    9'b?_???_110?1: res_alu = pc_step;                                    // JAL,  JALR
-    9'b0_000_01100: res_alu = X[rs1] +    rhs;                            // ADD
-    9'b?_000_00100: res_alu = X[rs1] +    rhs;                            // ADDI
-    9'b1_000_01100: res_alu = X[rs1] -    rhs;                            // SUB
-    9'b?_001_0?100: res_alu = X[rs1] <<  (rhs & 31);                      // SLL,  SLLI
-    9'b?_010_0?100: res_alu = { 31'b0, $signed(X[rs1]) < $signed(rhs)};   // SLT,  SLTI
-    9'b?_011_0?100: res_alu = { 31'b0,         X[rs1]  <         rhs };   // SLTU, SLTUI
-    9'b?_100_0?100: res_alu = X[rs1] ^    rhs;                            // XOR,  XORI
-    9'b0_101_0?100: res_alu = X[rs1] >>  (rhs & 31);                      // SRL,  SRLI
-    9'b1_101_0?100: res_alu = $signed(X[rs1]) >>> (rhs & 31);             // SRA,  SRAI
-    9'b?_110_0?100: res_alu = X[rs1] |    rhs;                            // OR,   ORI
-    9'b?_111_0?100: res_alu = X[rs1] &    rhs;                            // AND,  ANDI
-    9'b?_000_00000: res_alu = { {24{mem_in[ 7]}}, mem_in[ 7:0] };         // LB
-    9'b?_001_00000: res_alu = { {16{mem_in[15]}}, mem_in[15:0] };         // LH
-    9'b?_010_00000: res_alu =                     mem_in;                 // LW
-    9'b?_100_00000: res_alu = {  24'b0,           mem_in[ 7:0] };         // LBU
-    9'b?_101_00000: res_alu = {  16'b0,           mem_in[15:0] };         // LHU
-    default:        res_alu = 32'b0;
+    9'b?_???_01101: res_alu =       immu;                              // LUI
+    9'b?_???_00101: res_alu = pc  + immu;                              // AUIPC
+    9'b?_???_110?1: res_alu = pc_step;                                 // JAL,  JALR
+    9'b0_000_01100: res_alu = lhs +    rhs;                            // ADD
+    9'b?_000_00100: res_alu = lhs +    rhs;                            // ADDI
+    9'b1_000_01100: res_alu = lhs -    rhs;                            // SUB
+    9'b?_001_0?100: res_alu = lhs <<  (rhs & 31);                      // SLL,  SLLI
+    9'b?_010_0?100: res_alu = { 31'b0, $signed(lhs) < $signed(rhs)};   // SLT,  SLTI
+    9'b?_011_0?100: res_alu = { 31'b0,         lhs  <         rhs };   // SLTU, SLTUI
+    9'b?_100_0?100: res_alu = lhs ^    rhs;                            // XOR,  XORI
+    9'b0_101_0?100: res_alu = lhs >>  (rhs & 31);                      // SRL,  SRLI
+    9'b1_101_0?100: res_alu = $signed(lhs) >>> (rhs & 31);             // SRA,  SRAI
+    9'b?_110_0?100: res_alu = lhs |    rhs;                            // OR,   ORI
+    9'b?_111_0?100: res_alu = lhs &    rhs;                            // AND,  ANDI
+    9'b?_000_00000: res_alu = { {24{mem_in[ 7]}}, mem_in[ 7:0] };      // LB
+    9'b?_001_00000: res_alu = { {16{mem_in[15]}}, mem_in[15:0] };      // LH
+    9'b?_010_00000: res_alu =                     mem_in;              // LW
+    9'b?_100_00000: res_alu = {  24'b0,           mem_in[ 7:0] };      // LBU
+    9'b?_101_00000: res_alu = {  16'b0,           mem_in[15:0] };      // LHU
+    default:        res_alu = 32'bX;
     endcase
   end
 
@@ -199,55 +140,89 @@ module rv32i_cpu_t(
     endcase
   end
 
-  reg [2:0] phi;
+  // one-hot state machine
+  reg [4:0] phi;
   always @(posedge clk) begin
+    phi <= 5'b00000;
+    out_wr <= 0;
+    out_rd <= 0;
     if (reset) begin
-      pc          <= RESET_VECTOR - 4;
+      pc <= RESET_VECTOR - 4;
       X[REG_ZERO] <= 32'd0;
-      X[REG_SP]   <= STACK_POINTER;
-      mem_write   <= 0;
-      inst        <= 32'h00000013;  // latch a nop
-      phi         <= 0;
+      X[REG_SP] <= STACK_POINTER;
+      inst <= 32'h00000013;  // latch a nop
+      phi[0] <= 1'b1;
     end else begin
       if (!hold) begin
-        case(phi)
-        default: begin // writeback / fetch address
+        (* parallel_case, full_case *)
+        case(1'b1)
+        default: begin
+          phi[0] <= 1;
+        end
+        phi[0]: begin // writeback / fetch address
           // store the result of the last instruction
           if (write_rd) begin
             X[rd] <= res_alu;
           end
-          mem_write <= 0;
           pc <= next_pc;
-          // prep fetch of the next instruction
+          // read instruction
           out_mem_addr <= next_pc;
-          mem_width <= 4;
-          phi <= 1;
+          out_rd <= 1;
+          phi[1] <= 1;
         end
-        1: begin // delay while fetching
-          phi <= 2;
+        phi[1]: begin // delay while fetching
+          phi[2] <= 1;
         end
-        2: begin // latch and decode inst
-          inst <= mem_in;
-          phi <= 3;
+        phi[2]: begin // latch and decode inst
+          inst <= in_data;
+          phi[3] <= 1;
         end
-        3: begin // pre-load / store / exec
-          if (will_read) begin
+        phi[3]: begin // pre-load / store / exec
+          case (group)
+          5'b00000: begin // load
             out_mem_addr <= ld_addr;
-            mem_width    <= access_width;
-            phi          <= 4;
-          end else if (will_store) begin
-            out_mem_addr <= st_addr;
-            mem_write    <= 1;
-            mem_width    <= access_width;
-            phi          <= 0;
-          end else begin
-            phi <= 0;
+            out_rd <= 1;
+            phi[4] <= 1;
           end
+          5'b01000: begin // store
+            // store data
+            out_mem_addr <= st_addr;
+            out_wr <= 1;
+            // generate storage mask
+            out_wr_mask <= 4'b0000;
+            case (st_addr[1:0])
+            2'd0: begin
+              case (access_width)
+              1:  out_wr_mask <= 4'b0001;
+              2:  out_wr_mask <= 4'b0011;
+              4:  out_wr_mask <= 4'b1111;
+              endcase
+            end
+            2'd1: out_wr_mask <= 4'b0010;
+            2'd2: begin
+              case (access_width)
+              1:  out_wr_mask <= 4'b0100;
+              2:  out_wr_mask <= 4'b1100;
+              endcase
+            end
+            2'd3: out_wr_mask <= 4'b1000;
+            endcase
+            // generate output data
+            case (access_width)
+            1: out_data <= {st_data[7:0], st_data[7:0], st_data[7:0], st_data[7:0]};
+            2: out_data <= {st_data[15:0], st_data[15:0]};
+            4: out_data <= st_data;
+            endcase
+            phi[0] <= 1;
+          end
+          default: // other
+            phi[0] <= 1;
+          endcase
         end
-        4: begin // load delay
-          phi <= 0;
+        phi[4]: begin // load delay
+          phi[0] <= 1;
         end
-        endcase;
+        endcase
       end
     end
   end
