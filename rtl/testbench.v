@@ -38,7 +38,7 @@ module top();
   wire [7:0] leds;
   wire tx;
   wire rx = tx;
-  soc_t #(.ROM_FILE("tests/leds/out.hex"))
+  soc_t #(.ROM_FILE("tests/sram/out.hex"))
       soc(.clk(CLK),
           .reset(!resetn),
           .spi_miso(spi_miso),

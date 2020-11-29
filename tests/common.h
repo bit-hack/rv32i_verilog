@@ -17,6 +17,7 @@
 #define hw_uart_rx_status  ((volatile uint8_t*) 0x10000308)
 #define hw_gpio_data       ((volatile uint8_t*) 0x10000400)
 #define hw_gpio_oe         ((volatile uint8_t*) 0x10000404)
+#define hw_sram            ((volatile uint8_t*) 0x10000500)
 
 
 static void delay(int32_t cycles) {
