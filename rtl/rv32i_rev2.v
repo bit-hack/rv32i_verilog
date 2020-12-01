@@ -84,7 +84,7 @@ module alu_t(
     control[4]: result <= lhs & rhs;
     control[5]: result <= lhs << shamt;
     /* verilator lint_off WIDTH */
-    control[6]: result <= $signed({ control[7] & lhs[31], lhs }) >> shamt;
+    control[6]: result <= $signed({ control[7] & lhs[31], lhs }) >>> shamt;
     /* verilator lint_on WIDTH */
     control[8]: result <= { 31'd0, ltu };
     control[9]: result <= { 31'd0, lt };
@@ -156,12 +156,41 @@ module rv32i_cpu_rev2_t(
     is_LTU,
     is_EQ);
 
+  reg [7:0] ld_byte;
+  always @* begin
+    case (mem_addr[1:0])
+    2'b00: ld_byte = mem_data_in[ 7: 0];
+    2'b01: ld_byte = mem_data_in[15: 8];
+    2'b10: ld_byte = mem_data_in[23:16];
+    2'b11: ld_byte = mem_data_in[31:24];
+    endcase
+  end
+
+  reg [15:0] ld_half;
+  always @* begin
+    case (mem_addr[1])
+    1'b0: ld_half = mem_data_in[15: 0];
+    1'b1: ld_half = mem_data_in[31:16];
+    endcase
+  end
+
+  reg [31:0] ld_word;
+  always @* begin
+    case (1'b1)
+    funct3[0]: ld_word = { {24{ld_byte[ 7]}}, ld_byte }; // LB
+    funct3[1]: ld_word = { {16{ld_half[15]}}, ld_half }; // LH
+    default:   ld_word = mem_data_in;                    // LW
+    funct3[4]: ld_word = { 24'd0, ld_byte };             // LBU
+    funct3[5]: ld_word = { 16'd0, ld_half };             // LHU
+    endcase
+  end
+
   always @(posedge clk) begin
     // select rd value
     case (1'b1)
     is_JAL,
     is_JALR: rd_data = PC + 4;          // link addr
-    is_LOAD: rd_data = mem_data_in;     // load value
+    is_LOAD: rd_data = ld_word;
     default: rd_data = alu_res;         // alu result
     endcase
   end
@@ -296,23 +325,23 @@ module rv32i_cpu_rev2_t(
       end
       // ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
       stage[7]: begin  // store
-        mem_data_out <= rs2_data;
         mem_addr     <= alu_res;
         mem_wr       <= is_STORE;
 
         // memory output data
         case (1'b1)
-        funct3[0]: mem_data_out <=    rs2_data;
+        funct3[0]: mem_data_out <= {4{rs2_data[7:0]}};
         funct3[1]: mem_data_out <= {2{rs2_data[15:0]}};
-        funct3[2]: mem_data_out <= {4{rs2_data[7:0]}};
+        funct3[2]: mem_data_out <=    rs2_data;
         endcase
 
         // memory access mask
+        // XXX: flip this and check funct3 first?
         case (alu_res[1:0])
         2'b00: mem_wr_mask <= funct3[0] ? 4'b0001 : funct3[1] ? 4'b0011 : 4'b1111;
-        2'b01: mem_wr_mask <= 4'b0010;
-        2'b10: mem_wr_mask <= funct3[0] ? 4'b0011 : 4'b1100;
-        2'b11: mem_wr_mask <= 4'b1000;
+        2'b01: mem_wr_mask <=             4'b0010;
+        2'b10: mem_wr_mask <= funct3[0] ? 4'b0100 :             4'b1100;
+        2'b11: mem_wr_mask <=             4'b1000;
         endcase
 
         stage[8] <= 1;
