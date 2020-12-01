@@ -297,8 +297,24 @@ module rv32i_cpu_rev2_t(
       // ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
       stage[7]: begin  // store
         mem_data_out <= rs2_data;
-        mem_addr     <= rs1_data + imm;
+        mem_addr     <= alu_res;
         mem_wr       <= is_STORE;
+
+        // memory output data
+        case (1'b1)
+        funct3[0]: mem_data_out <=    rs2_data;
+        funct3[1]: mem_data_out <= {2{rs2_data[15:0]}};
+        funct3[2]: mem_data_out <= {4{rs2_data[7:0]}};
+        endcase
+
+        // memory access mask
+        case (alu_res[1:0])
+        2'b00: mem_wr_mask <= funct3[0] ? 4'b0001 : funct3[1] ? 4'b0011 : 4'b1111;
+        2'b01: mem_wr_mask <= 4'b0010;
+        2'b10: mem_wr_mask <= funct3[0] ? 4'b0011 : 4'b1100;
+        2'b11: mem_wr_mask <= 4'b1000;
+        endcase
+
         stage[8] <= 1;
       end
       // ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
