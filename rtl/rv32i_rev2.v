@@ -3,8 +3,7 @@
 
 // TODO:
 //  - byte and half addressing
-//  - slt/sltu
-//  - branch conditions
+//  - shift right
 
 module regfile_t(
     input clk,
@@ -60,22 +59,35 @@ module alu_t(
     input clk,
     input [31:0] lhs,
     input [31:0] rhs,
+    input [ 4:0] shamt,
     input [ 9:0] control,
-    output reg [31:0] result
+    output reg [31:0] result,
+    output reg lt,
+    output reg ltu,
+    output reg eq
     );
+
+  wire [32:0] minus = {1'b1, ~rhs} + {1'b0,lhs} + 33'b1;  // 33 bit subtract
+
+  always @* begin
+    lt  = (lhs[31] ^ rhs[31]) ? lhs[31] : minus[32];      // signed less than
+    ltu = minus[32];                                      // unsigned less than
+    eq  = (minus[31:0] == 0);                             // equality
+  end
+
   always @(posedge clk) begin
     case (1'b1)
     control[0]: result <= lhs + rhs;
-    control[1]: result <= lhs - rhs;
+    control[1]: result <= minus[31:0];
     control[2]: result <= lhs ^ rhs;
     control[3]: result <= lhs | rhs;
     control[4]: result <= lhs & rhs;
-    control[5]: result <= lhs << rhs[4:0];
+    control[5]: result <= lhs << shamt;
     /* verilator lint_off WIDTH */
-    control[6]: result <= { control[7] & lhs[31], lhs } >> rhs[4:0];
+    control[6]: result <= $signed({ control[7] & lhs[31], lhs }) >> shamt;
     /* verilator lint_on WIDTH */
-    control[8]: result <= { 31'd0, lhs < rhs };
-    control[9]: result <= { 31'd0, $signed(lhs) < $signed(rhs) };
+    control[8]: result <= { 31'd0, ltu };
+    control[9]: result <= { 31'd0, lt };
     endcase
   end
 endmodule
@@ -124,20 +136,25 @@ module rv32i_cpu_rev2_t(
   wire [31:0] rs1_data;
   wire [31:0] rs2_data;
   regfile_t regs(clk,
-                 is_LUI ? 0 : rs1, rs1_data,  // read port
-                 rs2, rs2_data,               // read port
-                 rd, rd_data, rd_wr);         // write port
+                 is_LUI ? 5'd0 : rs1, rs1_data,   // read port
+                 rs2, rs2_data,                   // read port
+                 rd, rd_data, rd_wr);             // write port
 
   // alu
   wire [31:0] alu_res;
   reg  [ 9:0] alu_ctrl;
+  wire is_LT;
+  wire is_LTU;
+  wire is_EQ;
   alu_t alu(clk,
-    (is_AUIPC | is_JAL) ? PC : rs1_data,                    // alu input 1
-    is_SHIFTI ? { 27'd0, rs2 } :
-                ((is_ALUI | is_JAL | is_JALR | is_LUI | is_AUIPC) ? imm :   // note: flip this around to just the rs2_data cases?
-                                                rs2_data),  // alu input 2
-    alu_ctrl,                                               // alu control
-    alu_res);                                               // alu result
+    (is_AUIPC | is_JAL) ? PC       : rs1_data,    // alu input 1
+    (is_BRA   | is_ALU) ? rs2_data : imm,         // alu input 2
+    is_ALUI ? rs2 : rs2_data[4:0],                // shift amount
+    alu_ctrl,                                     // alu control
+    alu_res,                                      // alu result
+    is_LT,
+    is_LTU,
+    is_EQ);
 
   always @(posedge clk) begin
     // select rd value
@@ -158,8 +175,8 @@ module rv32i_cpu_rev2_t(
                                       'b0000000001;  // add
       end
       funct3[1]: alu_ctrl =           'b0000100000;  // sll
-      funct3[2]: alu_ctrl =           'b0100000000;  // slt
-      funct3[3]: alu_ctrl =           'b1000000000;  // sltu
+      funct3[2]: alu_ctrl =           'b1000000000;  // slt
+      funct3[3]: alu_ctrl =           'b0100000000;  // sltu
       funct3[4]: alu_ctrl =           'b0000000100;  // xor
       funct3[5]: begin
         alu_ctrl = (bit30) ?          'b0011000000 : // sra
@@ -172,12 +189,6 @@ module rv32i_cpu_rev2_t(
       alu_ctrl =                      'b0000000001;  // add
     end
   end
-
-  // comparisons used for branches
-  // TODO: push this into the ALU please
-  wire is_LT  = $signed(alu_res) < $signed(rs1_data);
-  wire is_LTU = alu_res < rs1_data;
-  wire is_EQ  = (alu_res == 0);
 
   // control logic
   reg [8:0] stage;
